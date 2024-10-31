@@ -5,24 +5,26 @@
 #include <conio.h>
 #define MAX_SETOR_TARIK 100
 
-typedef char string[255];
+typedef char string[255]; // alias tipe data untuk menyingkat char variable[255]
 
-void daftarNasabah(char *nama, char *alamat, int *ktp, int *pin);
-void displayNasabah(string nama, string alamat, int ktp, int saldo);
-void displaySetorTarik(int setor[], int tarik[], int count_setor, int count_tarik);
-bool checkPIN(bool *blokir, int pin);
-void setorTarikUang(int saldo, int arr[], int count);
+void daftarNasabah(string *nama, string *alamat, int *ktp, int *pin, int setor[], int tarik[], bool *blokir, int *saldo, int *count_setor, int *count_tarik); // mendaftarkan nasabah
+void initSetorTarik(int arr[]);
+void displayNasabah(string nama, string alamat, int ktp, int saldo); // menampilkan data nasabah
+void displaySetorTarik(int setor[], int tarik[], int count_setor, int count_tarik); // cek riwayat setor & penarikan
+bool checkPIN(bool *blokir, int pin); // mengecek pin
+void setorTarikUang(int saldo, int arr[], int count); // memasukan data ke array setor atau tarik
 
 int main() {
-	char nama[255], alamat[255];
-	int pilihan, pin = 0, ktp=0, saldo = 0, count_setor = 0, count_tarik = 0, saldo_input;
+	string nama, alamat; // tipe data sama dengan char variable_name[255]
+	int pilihan, pin = 0, ktp= 0, saldo = 0, count_setor = 0, count_tarik = 0, saldo_input;
+	// count_tarik & saldo_input digunakan untuk menghitung dan indexing array setor & input
 
 	bool blokir = false, pin_valid = false;
 
-	int setor[MAX_SETOR_TARIK], tarik[MAX_SETOR_TARIK];
+	int setor[MAX_SETOR_TARIK], tarik[MAX_SETOR_TARIK]; // jumlah maksimal per array 100
 	
 	do {
-		system("cls");
+		system("cls"); // mengclear output puts / printf sebelumnya
 		
 		puts("Menu Bank");
 		puts("1. Daftar Nasabah");
@@ -36,7 +38,7 @@ int main() {
 		switch (pilihan)
 		{
 			case 1:
-				daftarNasabah(nama, alamat, &ktp, &pin);
+				daftarNasabah(&nama, &alamat, &ktp, &pin, setor, tarik, &blokir, &saldo, &count_setor, &count_tarik);
 				getch();
 				break;
 			case 2:
@@ -50,10 +52,10 @@ int main() {
 				if (pin_valid == true) {
 					printf("Input setoran: ");scanf("%d", &saldo_input);
 
-					if (count_setor <= 99) {
+					if (count_setor <= 99) { // melimit transaksi setor sampai 100 kali
 						setorTarikUang(saldo_input, setor, count_setor);
-						saldo += saldo_input;
-						count_setor++;
+						saldo += saldo_input; // menambah saldo
+						count_setor++; // menambah 1 ke index setor sekarang
 					}
 				}
 				
@@ -71,10 +73,10 @@ int main() {
 					printf("Tarik sebesar: ");scanf("%d", &saldo_input);
 
 					if (saldo_input <= saldo) {
-						if (count_tarik <= 99) {
+						if (count_tarik <= 99) { // melimit transaksi tarik sampai 100 kali
 							setorTarikUang(saldo_input, tarik, count_tarik);
-							saldo -= saldo_input;
-							count_tarik++;
+							saldo -= saldo_input; // mengurangi saldo
+							count_tarik++; // menambah 1 ke index tarik sekarang
 						}
 					} else {
 						puts("Maaf, saldo tidak mencukupi!");
@@ -112,7 +114,15 @@ int main() {
 	return 0;
 }
 
-void daftarNasabah(char *nama, char *alamat, int *ktp, int *pin) {
+void initSetorTarik(int arr[]) {
+	int i;
+	for (i = 0; i <= MAX_SETOR_TARIK; i++)
+	{
+		arr[i] = 0; // mengisi semua array dengan 0
+	}
+};
+
+void daftarNasabah(string *nama, string *alamat, int *ktp, int *pin, int setor[], int tarik[], bool *blokir, int *saldo, int *count_setor, int *count_tarik) {
 	puts("Data Nasabah Baru");
     printf("Nama: ");
     scanf("%s", nama);
@@ -122,11 +132,20 @@ void daftarNasabah(char *nama, char *alamat, int *ktp, int *pin) {
     scanf("%d", ktp);
     printf("Setup PIN: ");
     scanf("%d", pin);
+
+	// mereset variable
+	initSetorTarik(setor);
+	initSetorTarik(tarik);
+	(*blokir) = false;
+	(*saldo) = 0;
+	(*count_setor) = 0;
+	(*count_tarik) = 0;
+
     puts("Data nasabah baru berhasil disimpan!");
 }
 
 bool checkPIN(bool *blokir, int pin) {
-	int input_pin, kesempatan = 3, pin_benar=true;
+	int input_pin, kesempatan = 3;
 
 	if (pin == 0) {
 		printf("Belum ditemukan data nasabah!");
@@ -142,7 +161,7 @@ bool checkPIN(bool *blokir, int pin) {
 
 			if (kesempatan == 0) {
 				puts("Maaf data nasabah akan diblokir!");
-				(*blokir) = true;
+				(*blokir) = true; // variable blokir akan dikembalikan ke main
 			} else {
 				printf("PIN yang dimasukkan salah! %d kesempatan lagi!\n", kesempatan);
 			}
@@ -157,7 +176,7 @@ bool checkPIN(bool *blokir, int pin) {
 }
 
 void setorTarikUang(int saldo, int arr[], int count) {
-	arr[count] = saldo;
+	arr[count] = saldo; // memasukan data sesuai index sekarang ke array
 }
 
 void displayNasabah(string nama, string alamat, int ktp, int saldo){
@@ -171,7 +190,7 @@ if (ktp == 0) {
 
 void displaySetorTarik(int setor[], int tarik[], int count_setor, int count_tarik) {
 	int i;
-	if (count_setor == 0 && count_tarik == 0){
+	if (count_setor == 0 && count_tarik == 0){ // mengecek transaksi sudah pernah dilakukan atau belum
 		puts("Belum ada riwayat transaksi!");
 	}
 	for (i = 0; i < count_setor; i++)
